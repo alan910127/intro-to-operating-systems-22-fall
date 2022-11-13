@@ -121,17 +121,19 @@ QHBoxLayout* MainWindow::input_field() {
   // input field
 
   auto input_horizon = new QHBoxLayout();
-  std::vector<QWidget*> userinput_field;
-  userinput_field.push_back(new QLabel("Host: "));
-  userinput_field.push_back(new QLineEdit());
-  userinput_field.push_back(new QLabel(""));
-  userinput_field.push_back(new QLineEdit());
-  userinput_field.push_back(new QLabel(""));
-  userinput_field.push_back(new QLineEdit());
-  userinput_field.push_back(new QLabel(""));
-  userinput_field.push_back(new QLineEdit());
-  userinput_field.push_back(new QPushButton(""));
-  for (auto uf : userinput_field) input_horizon->addWidget(uf);
+
+  std::vector<QWidget*> userinput_field = {
+      new QLabel("Host: "),      new QLineEdit(),  // Hostname
+      new QLabel("Username: "),  new QLineEdit(),  // Username
+      new QLabel("Password: "),  new QLineEdit(),  // Password
+      new QLabel("Port: "),      new QLineEdit(),  // Port
+      new QPushButton("Connect")                   // Connect
+  };
+
+  for (auto uf : userinput_field) {
+    input_horizon->addWidget(uf);
+  }
+
   return input_horizon;
 }
 
