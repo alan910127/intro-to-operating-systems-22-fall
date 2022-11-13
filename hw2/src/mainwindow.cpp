@@ -167,9 +167,11 @@ void MainWindow::local_view() {
 
 void MainWindow::remote_view() {
   remote_site->header()->hide();
+
   auto remote_first_layer =
       new QTreeWidgetItem(*new QStringList() << "For_Windows", _DIR);
   remote_site->addTopLevelItem(remote_first_layer);
+
   auto remote_second =
       new QTreeWidgetItem(*new QStringList() << "Anti_Virus", _DIR);
   remote_first_layer->addChild(remote_second);
@@ -216,10 +218,17 @@ QWidget* MainWindow::status() {
   auto transfer_status = new QTabWidget();
   auto queue = new QTableWidget(1, 6);
 
-  queue->setHorizontalHeaderLabels(*new QStringList());
+  queue->setHorizontalHeaderLabels(*new QStringList() << "Server/Local file"
+                                                      << "Direction"
+                                                      << "Remote file"
+                                                      << "Size"
+                                                      << "Priority"
+                                                      << "Status");
   queue->verticalHeader()->hide();
   transfer_status->setTabPosition(QTabWidget::South);
   transfer_status->addTab(queue, "Queued");
+  transfer_status->addTab(new QTabWidget(), "Failed");
+  transfer_status->setTabPosition(QTabWidget::South);
 
   queue->horizontalHeader()->setStretchLastSection(true);
   queue->verticalHeader()->setStretchLastSection(true);
