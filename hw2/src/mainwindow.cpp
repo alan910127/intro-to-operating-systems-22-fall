@@ -142,10 +142,11 @@ void MainWindow::local_view() {
 
   auto first_layer = new QTreeWidgetItem(*new QStringList() << "usr", _DIR);
   local_site->addTopLevelItem(first_layer);
+
   auto second_layer = new QTreeWidgetItem(*new QStringList() << "bin", _DIR);
   first_layer->addChild(second_layer);
-  second_layer->addChild(new QTreeWidgetItem(*new QStringList() << ""
-                                                                << "",
+  second_layer->addChild(new QTreeWidgetItem(*new QStringList() << "apt"
+                                                                << "18824",
                                              _FILE));
 
   for (QTreeWidgetItemIterator local_it(local_site); *local_it; ++local_it) {
