@@ -1,0 +1,30 @@
+syntax = "proto2";
+
+package tiny_ftp;
+
+// Define server RPC functions
+service FtpServer {
+  // Login
+
+
+  // List Directory
+
+
+  // Working Directory Operations
+
+}
+
+// Define rpc message format
+message User {}
+
+message FtpStatus {}
+
+message SessionID {}
+
+message DEntry {}
+
+message Directory {}
+
+message Path {}
+
+message ChangeInfo {}
