@@ -74,28 +74,37 @@ class FtpServerServiceImpl final : public FtpServer::Service {
   Status Login(ServerContext *context, const User *user,
                SessionID *sessionid) override {
     // Parse and log user's request in stdout
+    std::string username = user->name();
+    std::string password = user->pwd();
+    std::cout << "User: " << username << " login with pwd: " << password
+              << std::endl;
 
     // Set fake session id for response
+    sessionid->set_id("f@k3_s3$$10n_1d");
 
     // Set currentDirectory to root since the user just login
+    currentDirectory = root;
 
-    return Status(StatusCode::UNIMPLEMENTED, "Login Not implemented!");
+    return Status::OK;
   }
 
   Status Logout(ServerContext *context, const SessionID *sessionid,
                 FtpStatus *status) override {
     // Parse and log user's request in stdout
+    std::string sessionId = sessionid->id();
+    std::cout << "Logout session: " << sessionId << std::endl;
 
     // Set fake status code for response
+    status->set_code(0);
 
-    return Status(StatusCode::UNIMPLEMENTED, "Logout Not implemented!");
+    return Status::OK;
   }
 
   Status ListDirectory(ServerContext *context, const SessionID *sessionid,
                        Directory *directory) override {
     // Parse and log user's request in stdout
-    std::cout << "List the directory of the session: " + sessionid->id()
-              << std::endl;
+    std::string sessionId = sessionid->id();
+    std::cout << "List the directory of the session: " + sessionId << std::endl;
 
     // Construct the response by traversing the pseudo file system
     for (auto iter = currentDirectory->subDirectory.begin();
@@ -122,22 +131,31 @@ class FtpServerServiceImpl final : public FtpServer::Service {
   Status GetWorkingDirectory(ServerContext *context, const SessionID *sessionid,
                              Path *path) override {
     // Parse and log user's request in stdout
+    std::string sessionId = sessionid->id();
+    std::cout << "Get the working directory of the session: " << sessionId
+              << std::endl;
 
     // Set response path to the name of currentDirectory
+    path->set_path(currentDirectory->name);
 
-    return Status(StatusCode::UNIMPLEMENTED,
-                  "GetWorkingDirectory Not implemented!");
+    return Status::OK;
   }
 
   Status ChangeWorkingDirectory(ServerContext *context,
                                 const ChangeInfo *changeinfo,
                                 FtpStatus *status) override {
     // Parse and log user's request in stdout
+    std::string sessionId = changeinfo->sessionid().id();
+    std::string path = changeinfo->path().path();
+
+    std::cout << "The working directory of the session: " << sessionId
+              << " has changed to " << path << std::endl;
 
     // Change currentDirectory base on changeinfo by calling FindDirectory
+    currentDirectory = FindDirectory(root, path);
+    status->set_code(0);
 
-    return Status(StatusCode::UNIMPLEMENTED,
-                  "ChangeWorkingDirectory Not implemented!");
+    return Status::OK;
   }
 };
 
