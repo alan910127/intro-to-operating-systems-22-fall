@@ -50,4 +50,4 @@ PROTOS_PATH = ../protos
 %.o.depends = %.cc
 
 LIBS += $$LDFLAGS
-QMAKE_CXXFLAGS += $$LDFLAGS
+QMAKE_CXXFLAGS += $$LDFLAGS $$CPPFLAGS
