@@ -151,14 +151,36 @@ class FtpServerServiceImpl final : public FtpServer::Service {
 
   Status DownloadSmallFile(ServerContext *context, const ChangeInfo *changeinfo,
                            FileChunk *filechunk) override {
-    std::cout << "Download the file on path: " +
-                     currentDirectory[changeinfo->sessionid().id()] + '/' +
-                     changeinfo->path().path() +
-                     " of the session: " + changeinfo->sessionid().id()
-              << std::endl;
+    std::string sessionId{changeinfo->sessionid().id()};
+    std::string filename{changeinfo->path().path()};
+    fs::path workingDir{currentDirectory[sessionId]};
+    fs::path downloadTarget{workingDir / filename};
+
+    std::cout << "Download the file on path: " << downloadTarget
+              << " of the session: " << sessionId << std::endl;
     // Use open, fstat, read, to set the element of filechunk
 
     // If download is fail, set size of filechunk to -1
+    if (!fs::exists(downloadTarget)) {
+      filechunk->set_size(-1);
+      return Status::OK;
+    }
+
+    filechunk->set_offset(0);
+
+    size_t fileSize{fs::file_size(downloadTarget)};
+    filechunk->set_size(fileSize);
+
+    std::string fileContent(fileSize, 0);
+
+    std::ifstream stream{downloadTarget};
+    stream.read(fileContent.data(), fileSize);
+
+    if (stream.fail()) {
+      filechunk->set_size(-1);
+    } else {
+      filechunk->set_data(fileContent);
+    }
 
     return Status::OK;
   }
