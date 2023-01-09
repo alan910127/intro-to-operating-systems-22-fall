@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -32,6 +34,8 @@ using tiny_ftp::FtpStatus;
 using tiny_ftp::Path;
 using tiny_ftp::SessionID;
 using tiny_ftp::User;
+
+namespace fs = std::filesystem;
 
 struct FileFS {
   std::string name;
@@ -86,29 +90,26 @@ class FtpServerServiceImpl final : public FtpServer::Service {
     std::cout << "List the directory of the session: " + sessionid->id()
               << std::endl;
 
-    DIR *dir;
+    fs::path dir{currentDirectory[sessionid->id()]};
 
-    struct dirent *ent;
-
-    if (dir = opendir(currentDirectory[sessionid->id()].c_str())) {
-      // Use readdir and fstat to get entry name, type, and size
-      while ((ent = /* readdir */) != NULL) {
-        std::string name = ent->d_name;
-        if (name == ".." || name == ".") continue;
-        DEntry *tmp;
-        tmp = directory->add_dentries();
-        tmp->set_name(/* d_name */);
-        if (ent->d_type == 4)  // if file is directory
-          tmp->set_type(/* DIR_TYPE */);
-        else  // if file is file
-          tmp->set_type(/* FILE_TYPE */);
-        struct stat st = {};
-        int fd = open((currentDirectory[sessionid->id()] + '/' + name).c_str(),
-                      O_RDONLY);
-        fstat(fd, &st);
-        tmp->set_size(/* st_size */);
+    for (const auto &dirEntry : fs::directory_iterator{dir}) {
+      std::string entryName = dirEntry.path();
+      if (entryName == "." || entryName == "..") {
+        continue;
       }
+
+      DEntry *entry = directory->add_dentries();
+      entry->set_name(entryName);
+
+      if (dirEntry.is_directory()) {
+        entry->set_type(DEntry_PathType::DEntry_PathType_DIRECTORY);
+      } else {
+        entry->set_type(DEntry_PathType::DEntry_PathType_FILE);
+      }
+
+      entry->set_size(dirEntry.file_size());
     }
+
     return Status::OK;
   }
 

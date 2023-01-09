@@ -19,7 +19,7 @@ SYSTEM ?= $(HOST_SYSTEM)
 CXX = g++
 SAN = -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-sanitize-recover=all -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-sanitize=null -fno-sanitize=alignment
 CPPFLAGS += `pkg-config --cflags protobuf grpc` 
-CXXFLAGS += -std=c++11 -I../protos #-g $(SAN)
+CXXFLAGS += -std=c++17 -I../protos #-g $(SAN)
 ifeq ($(SYSTEM),Darwin)
 LDFLAGS += -L/usr/local/lib `pkg-config --libs --static protobuf grpc++`\
            -pthread\
