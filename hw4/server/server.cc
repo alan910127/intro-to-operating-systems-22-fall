@@ -140,12 +140,12 @@ class FtpServerServiceImpl final : public FtpServer::Service {
 
     // Confirm seccess with opendir, if so, set status to 0, else set status to
     // 1
-    if (fs::exists(newDir)) {
-      status->set_code(0);
-    } else {
+    if (!fs::exists(newDir)) {
       status->set_code(1);
+      return Status::CANCELLED;
     }
 
+    status->set_code(1);
     return Status::OK;
   }
 
@@ -163,14 +163,12 @@ class FtpServerServiceImpl final : public FtpServer::Service {
     // If download is fail, set size of filechunk to -1
     if (!fs::exists(downloadTarget)) {
       filechunk->set_size(-1);
-      return Status::OK;
+      return Status::CANCELLED;
     }
 
     filechunk->set_offset(0);
 
     size_t fileSize{fs::file_size(downloadTarget)};
-    filechunk->set_size(fileSize);
-
     std::string fileContent(fileSize, 0);
 
     std::ifstream stream{downloadTarget};
@@ -178,10 +176,11 @@ class FtpServerServiceImpl final : public FtpServer::Service {
 
     if (stream.fail()) {
       filechunk->set_size(-1);
-    } else {
-      filechunk->set_data(fileContent);
+      return Status::CANCELLED;
     }
 
+    filechunk->set_size(fileSize);
+    filechunk->set_data(fileContent);
     return Status::OK;
   }
 
