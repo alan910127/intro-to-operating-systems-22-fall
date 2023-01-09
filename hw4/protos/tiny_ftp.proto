@@ -1,0 +1,63 @@
+syntax = "proto2";
+
+package tiny_ftp;
+
+// Define server RPC functions
+service FtpServer {
+  // Login
+  rpc Login(User) returns (SessionID) {}
+  rpc Logout(SessionID) returns (FtpStatus) {}
+
+  // List Directory
+  rpc ListDirectory(SessionID) returns (Directory) {}
+
+  // Working Directory Operations
+  rpc GetWorkingDirectory(SessionID) returns (Path) {}
+  rpc ChangeWorkingDirectory(ChangeInfo) returns (FtpStatus) {}
+
+  // Small File Transer
+  rpc DownloadSmallFile(ChangeInfo) returns (FileChunk) {}
+  rpc UploadSmallFile(FileInfo) returns (FtpStatus) {}
+}
+
+// Define rpc message formate
+message User {
+  required string name = 1;
+  required string pwd = 2;
+}
+
+message FtpStatus { required int32 code = 1; }
+
+message SessionID { required bytes id = 1; }
+
+message DEntry {
+  required string name = 1;
+
+  enum PathType {
+    FILE = 0;
+    DIRECTORY = 1;
+  }
+
+  required PathType type = 2;
+  required uint64 size = 3;
+}
+
+message Directory { repeated DEntry dentries = 1; }
+
+message Path { required string path = 1; }
+
+message ChangeInfo {
+  required SessionID sessionid = 1;
+  required Path path = 2;
+}
+
+message FileChunk {
+  required int32 size = 1;
+  required uint64 offset = 2;
+  required bytes data = 3;
+}
+
+message FileInfo{
+  required ChangeInfo changeinfo = 1;
+  required FileChunk filechunk = 2;
+}
