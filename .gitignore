@@ -2,6 +2,9 @@
 .qmake.stash
 ftp_gui
 
+# submission files
+*.png
+
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,qt,qtcreator,linux,c++
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,qt,qtcreator,linux,c++
 
