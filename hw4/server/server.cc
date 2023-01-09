@@ -93,12 +93,16 @@ class FtpServerServiceImpl final : public FtpServer::Service {
     fs::path dir{currentDirectory[sessionid->id()]};
 
     for (const auto &dirEntry : fs::directory_iterator{dir}) {
-      std::string entryName = dirEntry.path();
+      std::string entryName = dirEntry.path().filename();
       if (entryName == "." || entryName == "..") {
         continue;
       }
 
       DEntry *entry = directory->add_dentries();
+      if (entry == nullptr) {
+        continue;
+      }
+
       entry->set_name(entryName);
 
       if (dirEntry.is_directory()) {
@@ -107,7 +111,10 @@ class FtpServerServiceImpl final : public FtpServer::Service {
         entry->set_type(DEntry_PathType::DEntry_PathType_FILE);
       }
 
-      entry->set_size(dirEntry.file_size());
+      // fs::file_size is implementation-defined when input is not regular file
+      struct stat st;
+      stat(dirEntry.path().c_str(), &st);
+      entry->set_size(st.st_size);
     }
 
     return Status::OK;
@@ -145,7 +152,7 @@ class FtpServerServiceImpl final : public FtpServer::Service {
       return Status::CANCELLED;
     }
 
-    status->set_code(1);
+    status->set_code(0);
     return Status::OK;
   }
 
@@ -168,7 +175,8 @@ class FtpServerServiceImpl final : public FtpServer::Service {
 
     filechunk->set_offset(0);
 
-    std::int32_t fileSize{fs::file_size(downloadTarget)};
+    std::int32_t fileSize{
+        static_cast<std::int32_t>(fs::file_size(downloadTarget))};
     std::string fileContent(fileSize, 0);
 
     std::ifstream stream{downloadTarget};
