@@ -168,13 +168,12 @@ class FtpServerServiceImpl final : public FtpServer::Service {
 
     filechunk->set_offset(0);
 
-    size_t fileSize{fs::file_size(downloadTarget)};
+    std::int32_t fileSize{fs::file_size(downloadTarget)};
     std::string fileContent(fileSize, 0);
 
     std::ifstream stream{downloadTarget};
-    stream.read(fileContent.data(), fileSize);
 
-    if (stream.fail()) {
+    if (!stream.read(fileContent.data(), fileSize)) {
       filechunk->set_size(-1);
       return Status::CANCELLED;
     }
@@ -186,38 +185,38 @@ class FtpServerServiceImpl final : public FtpServer::Service {
 
   Status UploadSmallFile(ServerContext *context, const FileInfo *fileinfo,
                          FtpStatus *status) override {
-    std::cout << "Start Upload File to: "
-              << currentDirectory[fileinfo->changeinfo().sessionid().id()] +
-                     '/' + fileinfo->changeinfo().path().path()
-              << std::endl;
+    std::string sessionId{fileinfo->changeinfo().sessionid().id()};
+    std::string filename{fileinfo->changeinfo().path().path()};
+    fs::path workingDir{currentDirectory[sessionId]};
+    fs::path uploadTarget{workingDir / filename};
+
+    std::cout << "Start Upload File to: " << uploadTarget << std::endl;
+
+    std::int32_t uploadSize{fileinfo->filechunk().size()};
 
     // if file size is -1, it means upload fail
-    if (fileinfo->filechunk().size() == -1) {
+    if (uploadSize == -1) {
       status->set_code(1);
       return Status::CANCELLED;
     }
 
-    int fd = open((currentDirectory[fileinfo->changeinfo().sessionid().id()] +
-                   '/' + fileinfo->changeinfo().path().path())
-                      .c_str(),
-                  O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (fd != -1) {
-      std::cout << "Open File Succeed" << std::endl;
-      if (write(fd, fileinfo->filechunk().data().c_str(),
-                fileinfo->filechunk().size()) > 0) {
-        status->set_code(0);
-        std::cout << "Upload Finish" << std::endl;
-        close(fd);
-        return Status::OK;
-      } else {
-        close(fd);
-        status->set_code(1);
-        return Status::CANCELLED;
-      }
-    } else {
+    std::ofstream stream{uploadTarget};
+
+    if (!stream.good()) {
       status->set_code(1);
       return Status::CANCELLED;
     }
+    std::cout << "Open File Succeed" << std::endl;
+
+    std::string uploadContent{fileinfo->filechunk().data()};
+
+    if (!stream.write(uploadContent.c_str(), uploadSize)) {
+      status->set_code(1);
+      return Status::CANCELLED;
+    }
+    std::cout << "Upload Finish" << std::endl;
+
+    return Status::OK;
   }
 };
 
