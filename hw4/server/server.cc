@@ -119,6 +119,10 @@ class FtpServerServiceImpl final : public FtpServer::Service {
               << std::endl;
     // Set currentDirectory of sessionid to path
 
+    fs::path workingDir{currentDirectory[sessionid->id()]};
+
+    path->set_path(workingDir.string());
+
     return Status::OK;
   }
 
