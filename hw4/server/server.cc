@@ -129,14 +129,22 @@ class FtpServerServiceImpl final : public FtpServer::Service {
   Status ChangeWorkingDirectory(ServerContext *context,
                                 const ChangeInfo *changeinfo,
                                 FtpStatus *status) override {
-    std::cout << "The working directory of the session: " +
-                     changeinfo->sessionid().id() + " has changed to " +
-                     changeinfo->path().path()
-              << std::endl;
+    std::string sessionId{changeinfo->sessionid().id()};
+    std::string newDir{changeinfo->path().path()};
+
+    std::cout << "The working directory of the session: " << sessionId
+              << " has changed to " << newDir << std::endl;
+
     // Set Path to currentDirectory of sessionid
+    currentDirectory[sessionId] = newDir;
 
     // Confirm seccess with opendir, if so, set status to 0, else set status to
     // 1
+    if (fs::exists(newDir)) {
+      status->set_code(0);
+    } else {
+      status->set_code(1);
+    }
 
     return Status::OK;
   }
